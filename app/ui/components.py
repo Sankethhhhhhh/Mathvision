@@ -1,46 +1,60 @@
-"""Reusable Streamlit rendering helpers (pipeline visualization)."""
+"""Reusable presentational helpers — no ML logic here."""
 from __future__ import annotations
 
-import numpy as np
+import html
 
 
-def render_predictions(predictions: list[tuple[str, float]], confidences: list[float] | None = None):
-    """Render per-symbol predictions inside Streamlit (lazy import)."""
-    import streamlit as st
-
-    confs = confidences if confidences is not None else [p[1] for p in predictions]
-    labels = [p[0] if isinstance(p, tuple) else p for p in predictions]
-    st.subheader("Symbol predictions")
-    cols = st.columns(max(1, len(labels)))
-    for col, lab, conf in zip(cols, labels, confs):
-        with col:
-            st.markdown(f"### `{lab}`")
-            st.progress(min(1.0, max(0.0, float(conf))))
-            st.caption(f"{float(conf):.1%}")
+def esc(s: object) -> str:
+    return html.escape(str(s))
 
 
-def render_solution(expression: str, message: str):
-    """Render recognized equation + solver output."""
-    import streamlit as st
-
-    st.subheader("Recognized equation")
-    st.latex(expression.replace("×", r"\times").replace("÷", r"\div"))
-    st.code(expression)
-    st.subheader("Solution")
-    st.success(message)
+def section_label(title: str) -> str:
+    return f'<div class="mv-panel-title">{esc(title)}</div>'
 
 
-def render_crops(crops: list, predictions: list | None = None):
-    """Render segmented 28x28 crops with optional predicted labels."""
-    import streamlit as st
+def empty_result_card() -> str:
+    return (
+        '<div class="mv-card" style="text-align:center">'
+        '<div class="mv-panel-title">YOUR RESULT</div>'
+        '<div class="mv-empty-ico">∑</div>'
+        '<p class="mv-small">Draw an equation and click Solve.<br>'
+        'Your solution will appear here.</p>'
+        '</div>'
+    )
 
-    st.subheader(f"Segmented symbols ({len(crops)})")
-    cols = st.columns(max(1, min(len(crops), 8)))
-    for i, crop in enumerate(crops):
-        img = crop.image28 if hasattr(crop, "image28") else np.asarray(crop)
-        label = ""
-        if predictions is not None and i < len(predictions):
-            p = predictions[i]
-            label = f"{p[0]} ({p[1]:.0%})" if isinstance(p, tuple) else str(p)
-        with cols[i % len(cols)]:
-            st.image(img, width=64, caption=label)
+
+def no_input_card() -> str:
+    return (
+        '<div class="mv-card mv-card-tight">'
+        '<b>No equation yet.</b><br>'
+        '<span class="mv-small">Draw or upload an equation to begin.</span>'
+        '</div>'
+    )
+
+
+def conf_bar_html(label: str, conf: float) -> str:
+    pct = max(0.0, min(1.0, float(conf)))
+    cls = "mv-bar low" if pct < 0.60 else "mv-bar"
+    return (
+        f'<div class="mv-symrow"><div class="sym">{esc(label)}</div>'
+        f'<div class="{cls}"><span style="width:{pct * 100:.1f}%"></span></div>'
+        f'<div class="mv-conf">{pct:.1%}</div></div>'
+    )
+
+
+def symbol_grid_html(details: list[tuple[str, float]]) -> str:
+    """Custom HTML grid — deliberately avoids st.table/pandas/pyarrow."""
+    rows = "".join(conf_bar_html(lab, c) for lab, c in details)
+    return (
+        f'{section_label("SYMBOL PREDICTIONS — LIVE CNN OUTPUT")}'
+        f'<div>{rows}</div>'
+    )
+
+
+def history_row_html(expr: str, answer: str, conf: float, ms: float) -> str:
+    return (
+        '<div class="mv-hist">'
+        f'<div>{esc(expr)} &nbsp;→&nbsp; <span class="ans">{esc(answer)}</span></div>'
+        f'<div class="meta">{conf:.0%} · {ms:.0f} ms</div>'
+        '</div>'
+    )

@@ -1,8 +1,12 @@
-"""MathVision Streamlit app — dark themed two-column workspace.
+"""MathVision — AI mathematical vision workstation.
 
-DRAWING and UPLOAD share one backend: run_pipeline() below.
-Nothing is hardcoded: predictions, confidences, equations, answers and
-timings all come from the live CNN + SymPy pipeline.
+Backend contract (PROTECTED, unchanged behavior):
+  preprocessing.preprocess_for_segmentation
+  segmentation.symbol_segmenter.segment_symbols
+  recognition.predictor.SymbolPredictor.predict_batch
+  solver.equation_solver.solve_expression
+This file is presentation only: it calls run_pipeline()/solve_image()
+and renders real outputs. Nothing is hardcoded.
 """
 from __future__ import annotations
 
@@ -45,7 +49,6 @@ def run_pipeline(image: np.ndarray, predictor=None):
     binary = preprocess_for_segmentation(image)
     crops = segment_symbols(binary)
     labels: list[str] = []
-    confs: list[float] = []
     details: list = []
     if crops:
         try:
@@ -53,13 +56,9 @@ def run_pipeline(image: np.ndarray, predictor=None):
             results = predictor.predict_batch([c.image28 for c in crops])
             for lab, conf, _probs in results:
                 labels.append(lab)
-                confs.append(conf)
                 details.append((lab, conf))
         except Exception:
-            # No weights / no TF / anything else: recognition unavailable,
-            # but segmentation preview still works (never crash the UI).
             labels = ["?" for _ in crops]
-            confs = [0.0 for _ in crops]
             details = [(lab, 0.0) for lab in labels]
     expression = "".join(labels)
     result = solve_expression(expression) if labels and "?" not in labels else None
@@ -76,202 +75,237 @@ def solve_image(image: np.ndarray, predictor=None) -> dict:
             "ms": dt}
 
 
+def _push_history(expr: str, answer: str, conf: float, ms: float) -> None:
+    import streamlit as st
+
+    hist = st.session_state.get("history", [])
+    if hist and hist[0].get("expr") == expr:
+        return
+    hist = [{"expr": expr, "answer": answer, "conf": conf, "ms": ms}] + hist
+    st.session_state.history = hist[:8]
+
+
 def main():
     import streamlit as st
-    from app.ui.theme import apply_theme, status_badge
+    from app.ui.canvas import draw_canvas
+    from app.ui.components import empty_result_card, history_row_html, section_label
+    from app.ui.pipeline_view import render_inspection, render_pipeline
+    from app.ui.result_view import render_result_card
+    from app.ui.theme import apply_theme, status_pill
 
     st.set_page_config(page_title="MathVision", page_icon="∑", layout="wide")
     apply_theme(st)
 
     online = MODEL_PATH.exists()
     try:
-        metrics = __import__("json").load(open(METRICS_PATH, encoding="utf-8")) \
-            if METRICS_PATH.exists() else {}
+        import json
+
+        metrics = json.load(open(METRICS_PATH, encoding="utf-8")) if METRICS_PATH.exists() else {}
     except Exception:
         metrics = {}
 
     @st.cache_resource(show_spinner=False)
     def _predictor():
         from app.recognition.predictor import SymbolPredictor
+
         try:
             p = SymbolPredictor()
-            # warm up (loads weights now so SOLVE timing is pure inference)
             p.predict_batch([np.zeros((28, 28), np.uint8)])
             return p
         except Exception:
-            # Missing weights, missing TF, anything else: OFFLINE preview
-            # mode instead of a raw traceback (see status badge below).
             return None
 
     predictor = _predictor() if online else None
+    is_online = bool(online and predictor is not None)
 
-    # ---------- header ----------
-    st.markdown("# MATHVISION")
-    st.markdown("## Handwritten Mathematics, Understood.")
-    st.markdown('<p class="mv-muted">Local CNN-powered mathematical expression '
-                "recognition and solving.</p>", unsafe_allow_html=True)
-    st.markdown('<p class="mv-muted">Local CNN • Computer Vision • '
-                "Symbol Recognition • SymPy</p>", unsafe_allow_html=True)
-    status_badge(st, online and predictor is not None)
+    for k, v in {"canvas_key": 0, "solution": None, "history": [],
+                 "input_mode": "Draw", "nav": "Workspace"}.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
 
-    if not online:
-        st.warning("No trained model found — run `python -m training.train`. "
-                   "Segmentation preview only.")
+    # ---------- sidebar: purposeful product nav ----------
+    with st.sidebar:
+        st.markdown('<div class="mv-brand">∑ MATHVISION</div>', unsafe_allow_html=True)
+        st.caption("Handwritten math · local CNN")
+        nav = st.radio("Section", ["Workspace", "Model", "About"],
+                       key="nav", label_visibility="collapsed")
+        if st.button("＋ New Equation", use_container_width=True):
+            st.session_state.canvas_key += 1
+            st.session_state.solution = None
+            st.session_state.nav = "Workspace"
+            st.rerun()
+        st.markdown(section_label("MODEL"), unsafe_allow_html=True)
+        st.markdown(status_pill(is_online), unsafe_allow_html=True)
+        st.markdown(section_label("RECENT EQUATIONS"), unsafe_allow_html=True)
+        if not st.session_state.history:
+            st.caption("Nothing solved yet this session.")
+        else:
+            for h in st.session_state.history:
+                st.markdown(history_row_html(h["expr"], h["answer"], h["conf"], h["ms"]),
+                            unsafe_allow_html=True)
 
-    if "canvas_key" not in st.session_state:
-        st.session_state.canvas_key = 0
-    if "solution" not in st.session_state:
-        st.session_state.solution = None
+    # ---------- top bar ----------
+    st.markdown(
+        f'<div class="mv-topbar"><div class="mv-brand">MATHVISION'
+        f'<small>mathematical vision workstation</small></div>'
+        f'<div>{status_pill(is_online)}</div></div>',
+        unsafe_allow_html=True,
+    )
 
-    col_in, col_out = st.columns(2, gap="large")
+    if nav == "Model":
+        st.markdown("### MODEL")
+        st.markdown(
+            '<p class="mv-small"><b>MathVision CNN</b> · Handwritten symbol classification · '
+            "Input 28 × 28 × 1 · Inference: local, offline after install<br>"
+            "Classes: <b>0–9</b>, <b>+</b>, <b>−</b>, <b>×</b>, <b>÷</b>, <b>=</b>, <b>x</b></p>",
+            unsafe_allow_html=True,
+        )
+        if metrics:
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("TEST ACCURACY", f"{metrics['test_accuracy']:.2%}")
+            m2.metric("PRECISION", f"{metrics['macro_precision']:.4f}")
+            m3.metric("RECALL", f"{metrics['macro_recall']:.4f}")
+            m4.metric("F1", f"{metrics['macro_f1']:.4f}")
+            weakest = min(metrics["per_class"].items(), key=lambda kv: kv[1]["recall"])
+            st.caption(f"Weakest class: {weakest[0]} ({weakest[1]['recall']:.1%} recall) · "
+                       "measured on the real-handwriting test set.")
+        else:
+            st.info("Metrics appear after `python -m training.evaluate`.")
+        st.caption("No cloud APIs · no external OCR · weights load once via cache_resource.")
+        return
 
-    # ---------- INPUT ----------
+    if nav == "About":
+        st.markdown("### ABOUT")
+        st.markdown(
+            '<div class="mv-card"><b>MathVision</b> — NNDL mini-project.<br>'
+            '<span class="mv-small">Local CNN · Computer Vision · Symbol Recognition · SymPy<br>'
+            "Draw an equation, the CNN reads each symbol, SymPy solves it. "
+            "Fully offline after install.</span></div>",
+            unsafe_allow_html=True,
+        )
+        return
+
+    # ---------- compact hero ----------
+    st.markdown(
+        '<div class="mv-hero"><h1>MATHVISION</h1>'
+        "<h2>Handwritten mathematics, understood.</h2>"
+        '<p class="mv-small">Draw an equation or upload an image. '
+        "Our local neural network recognizes the symbols and solves the expression.</p></div>",
+        unsafe_allow_html=True,
+    )
+    if not is_online:
+        st.warning("No trained model found — run `python -m training.train`. Segmentation preview only.")
+
+    mode = st.radio("Input mode", ["Draw", "Upload"], horizontal=True,
+                    key="input_mode", label_visibility="collapsed")
+
+    col_in, col_out = st.columns([1.05, 0.95], gap="large")
+
+    # ---------- LEFT: input ----------
     with col_in:
-        st.markdown("### INPUT")
-        tabs = st.tabs(["DRAW EQUATION", "UPLOAD IMAGE"])
-        draw_image = None
-        upload_image = None
+        st.markdown(
+            '<div class="mv-card">'
+            f'{section_label("WRITE YOUR EQUATION")}'
+            '<p class="mv-helper">Use clear, separated strokes for best recognition.</p>',
+            unsafe_allow_html=True,
+        )
+        draw_image, upload_image = None, None
         draw_empty = True
-        do_solve_draw = False
-        do_solve_upload = False
-        with tabs[0]:
+        if mode == "Draw":
             try:
-                from app.ui.canvas import draw_canvas
+                st.markdown('<div class="mv-canvas-wrap">', unsafe_allow_html=True)
                 draw_image, draw_empty = draw_canvas(st, key=f"mv_canvas_{st.session_state.canvas_key}")
+                st.markdown("</div>", unsafe_allow_html=True)
             except (ImportError, ModuleNotFoundError):
                 draw_image, draw_empty = None, True
-                st.warning("Drawing canvas is unavailable in this Python environment "
-                           "(`streamlit-drawable-canvas` not installed). Use the "
-                           "UPLOAD IMAGE tab — or relaunch with "
+                st.warning("Canvas package missing — switch to Upload or relaunch with "
                            "`.\\venv\\Scripts\\python.exe run.py`.")
-            b1, b2 = st.columns(2)
-            with b1:
-                if st.button("CLEAR", use_container_width=True):
-                    st.session_state.canvas_key += 1
-                    st.session_state.solution = None
-                    st.rerun()
-            with b2:
-                do_solve_draw = st.button("SOLVE", type="primary", use_container_width=True,
-                                          disabled=draw_image is None)
-            if draw_image is None and not draw_empty:
-                st.info("Draw an equation on the canvas, then press SOLVE.")
-        with tabs[1]:
-            upload = st.file_uploader("Equation image", type=["png", "jpg", "jpeg"])
+        else:
+            upload = st.file_uploader("Drop an equation image here", type=["png", "jpg", "jpeg"])
+            st.caption("Supported: PNG · JPG · JPEG")
             if upload is not None:
                 try:
                     upload_image = _decode_upload(upload)
+                    st.image(cv2.cvtColor(upload_image, cv2.COLOR_BGR2RGB),
+                             caption="Upload preview", width="stretch")
                 except ValueError as e:
                     st.error(str(e))
-                    upload_image = None
-            if upload_image is not None:
-                st.image(cv2.cvtColor(upload_image, cv2.COLOR_BGR2RGB), caption="Upload preview")
-                do_solve_upload = st.button("SOLVE UPLOAD", type="primary", use_container_width=True)
+
+        b1, b2 = st.columns(2)
+        with b1:
+            if st.button("CLEAR", use_container_width=True):
+                st.session_state.canvas_key += 1
+                st.session_state.solution = None
+                st.rerun()
+        with b2:
+            ready = (draw_image is not None) if mode == "Draw" else (upload_image is not None)
+            do_solve = st.button("SOLVE EQUATION", type="primary",
+                                 use_container_width=True, disabled=not ready)
+        if mode == "Draw" and draw_image is None and not draw_empty:
+            st.info("Draw an equation on the canvas, then press SOLVE EQUATION.")
+        if mode == "Upload" and upload_image is None:
+            st.info("Drop an equation image above to begin.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if do_solve:
+            target = draw_image if mode == "Draw" else upload_image
+            if target is None:
+                st.error("Draw or upload an equation first.")
             else:
-                st.info("Upload a PNG/JPG photo of a handwritten equation.")
+                with st.spinner("Analyzing handwriting… Preprocessing → Detecting → Recognizing → Solving"):
+                    try:
+                        sol = solve_image(target, predictor)
+                        st.session_state.solution = sol
+                        if sol["crops"] and sol["result"] is not None and sol["result"].kind != "error":
+                            _push_history(sol["expression"], sol["result"].message,
+                                          sol["confidence"], sol["ms"])
+                        st.rerun()
+                    except Exception:
+                        st.error("Could not process that image. Try a clearer photo or rewrite the equation.")
 
-        if do_solve_draw and draw_image is not None:
-            with st.spinner("Analyzing handwriting…"):
-                try:
-                    st.session_state.solution = solve_image(draw_image, predictor)
-                except Exception:  # never show raw tracebacks
-                    st.error("Could not process that image. "
-                             "Try a clearer photo or rewrite the equation.")
-                    st.session_state.solution = None
-        elif do_solve_upload and upload_image is not None:
-            with st.spinner("Analyzing handwriting…"):
-                try:
-                    st.session_state.solution = solve_image(upload_image, predictor)
-                except Exception:  # never show raw tracebacks
-                    st.error("Could not process that image. "
-                             "Try a clearer photo or rewrite the equation.")
-                    st.session_state.solution = None
-
-    # ---------- RESULT ----------
+    # ---------- RIGHT: result ----------
     with col_out:
-        st.markdown("### SOLUTION")
         sol = st.session_state.solution
         if sol is None:
-            st.markdown('<div class="mv-card mv-muted">Draw or upload an equation, '
-                        "then press SOLVE.</div>", unsafe_allow_html=True)
+            st.markdown(empty_result_card(), unsafe_allow_html=True)
         elif not sol["crops"]:
-            st.error("No mathematical symbols were detected. "
-                     "Try writing larger, darker strokes.")
+            st.error("No mathematical symbols were detected. Try writing larger, darker strokes.")
         else:
-            low = [d for d in sol["details"] if d[1] < 0.60]
-            st.markdown('<div class="mv-card">', unsafe_allow_html=True)
-            st.markdown("RECOGNIZED EQUATION")
-            st.markdown(f'<div class="mv-eq">{sol["expression"]}</div>',
-                        unsafe_allow_html=True)
-            st.divider()
-            st.markdown("SOLUTION")
-            if sol["result"] is None:
-                st.error("Recognition incomplete (model missing).")
-            elif sol["result"].kind == "error":
-                st.error("We recognized the input, but it could not be interpreted "
-                         f"as a valid equation. ({sol['result'].message})")
-            else:
-                st.markdown(f'<div class="mv-sol">{sol["result"].message}</div>',
-                            unsafe_allow_html=True)
-            st.divider()
-            c1, c2 = st.columns(2)
-            c1.metric("MODEL CONFIDENCE", f"{sol['confidence']:.1%}")
-            c2.metric("INFERENCE TIME", f"{sol['ms']:.0f} ms")
-            if low:
-                st.warning("Low-confidence recognition. Try rewriting the equation.")
-            st.markdown("</div>", unsafe_allow_html=True)
+            render_result_card(st, sol)
+            render_inspection(st, sol)
 
-            with st.expander("Recognition Details"):
-                from app.ui.components import render_crops
-                st.markdown("**Original input**")
-                st.image(cv2.cvtColor(sol["image"], cv2.COLOR_BGR2RGB))
-                st.markdown("**Preprocessed (binary)**")
-                st.image(sol["binary"])
-                render_crops(sol["crops"], sol["details"])
-                st.markdown("**Symbol · Prediction · Confidence**")
-                st.table([{"Symbol": f"`{lab}`", "Confidence": f"{c:.1%}"}
-                          for lab, c in sol["details"]])
+    # ---------- pipeline ----------
+    st.markdown("<br>", unsafe_allow_html=True)
+    render_pipeline(st, st.session_state.solution)
 
-    # ---------- pipeline / examples / model ----------
-    st.divider()
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("### HOW MATHVISION THINKS")
-        steps = [("IMAGE", "Input"), ("FILTER", "Preprocess"),
-                 ("GRID", "Segment"), ("NN", "CNN Recognition"),
-                 ("EQUATION", "Reconstruct"), ("√", "Solve")]
-        cols = st.columns(len(steps))
-        for col, (icon, label) in zip(cols, steps):
-            with col:
-                st.markdown(f'<div class="mv-card mv-step-card">'
-                            f"<strong>[ {icon} ]</strong><br>{label}</div>",
-                            unsafe_allow_html=True)
-        st.markdown("### TRY AN EXAMPLE")
-        st.caption("Example inputs — every answer is computed live by the CNN + SymPy.")
-        for label, fname in EXAMPLES:
-            if st.button(label, key=f"ex_{fname}"):
+    # ---------- examples ----------
+    st.markdown("### TRY IT")
+    st.caption("Example inputs — every answer is computed live by the CNN + SymPy.")
+    ex_cols = st.columns(len(EXAMPLES))
+    for col, (label, fname) in zip(ex_cols, EXAMPLES):
+        with col:
+            st.markdown(f'<div class="mv-chip">{label}</div>', unsafe_allow_html=True)
+            if st.button("Run", key=f"ex_{fname}", use_container_width=True):
                 p = TEST_DIR / fname
                 if p.exists():
                     with st.spinner("Analyzing handwriting…"):
                         img = cv2.imread(str(p), cv2.IMREAD_COLOR)
-                        st.session_state.solution = solve_image(img, predictor)
+                        sol = solve_image(img, predictor)
+                        st.session_state.solution = sol
+                        if sol["crops"] and sol["result"] is not None and sol["result"].kind != "error":
+                            _push_history(sol["expression"], sol["result"].message,
+                                          sol["confidence"], sol["ms"])
+                        st.session_state.nav = "Workspace"
                         st.rerun()
-    with c2:
-        st.markdown("### MODEL")
-        st.markdown("**MathVision CNN** · Input 28 × 28 × 1 · "
-                    "Handwritten symbol classification · Inference: local")
-        st.markdown("Classes: `0–9`, `+`, `−`, `×`, `÷`, `=`, `x`")
-        if metrics:
-            st.metric("MEASURED TEST ACCURACY", f"{metrics['test_accuracy']:.2%}")
-            st.caption(f"Macro F1 {metrics['macro_f1']:.4f} · "
-                       f"weakest: {min(metrics['per_class'].items(), key=lambda kv: kv[1]['recall'])[0]} "
-                       f"({min(v['recall'] for v in metrics['per_class'].values()):.1%} recall)")
-        else:
-            st.caption("Accuracy appears here after `python -m training.evaluate`.")
-    st.caption("MathVision runs fully offline after install — no cloud APIs.")
-    st.divider()
-    st.markdown('<p class="mv-muted" style="text-align:center">MathVision<br>'
-                "NNDL Mini Project · Local Deep Learning Pipeline</p>",
-                unsafe_allow_html=True)
+                else:
+                    st.error(f"Example file missing: {fname}")
+
+    st.markdown(
+        '<div class="mv-footer">MATHVISION<br>'
+        '<span class="mv-muted">Local CNN · Computer Vision · Symbol Recognition · SymPy<br>'
+        "NNDL Mini Project · Runs fully offline</span></div>",
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
