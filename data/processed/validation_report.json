@@ -1,0 +1,108 @@
+{
+  "hasyv2": {
+    "manifest_rows": 3138,
+    "unreadable": [],
+    "shapes": {
+      "32x32": 3138
+    },
+    "class_distribution": {
+      "+": 90,
+      "-": 118,
+      "0": 133,
+      "1": 118,
+      "2": 124,
+      "3": 120,
+      "4": 61,
+      "5": 78,
+      "6": 100,
+      "7": 75,
+      "8": 121,
+      "9": 90,
+      "x": 66,
+      "×": 1509,
+      "÷": 335
+    },
+    "label_mismatches": [],
+    "ok": true
+  },
+  "crohme": {
+    "archived_counts": {
+      ".png": 27279,
+      ".inkml": 164287,
+      ".lg": 172332
+    },
+    "ondisk_counts": {
+      ".png": 27279,
+      ".inkml": 164287,
+      ".lg": 172332
+    },
+    "extraction_gaps": {
+      ".png": 0,
+      ".inkml": 0,
+      ".lg": 0
+    },
+    "png_total": 27279,
+    "png_unreadable": [],
+    "lg_checked": 172332,
+    "lg_unparseable": [],
+    "lg_n_unparseable": 0,
+    "lg_zero_objects": 1,
+    "inkml_testval": 5201,
+    "inkml_train_sample": 1000,
+    "inkml_invalid_xml": [
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\31315.inkml",
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\14641.inkml",
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\25629.inkml",
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\17453.inkml",
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\9382.inkml",
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\36316.inkml",
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\27012.inkml",
+      "INKML\\train\\Artificial_data\\gen_LaTeX_data_CROHME_2019\\25964.inkml"
+    ],
+    "inkml_n_invalid": 8,
+    "inkml_no_latex_truth": 0,
+    "test_alignment": {
+      "CROHME2019_test": {
+        "png": 1199,
+        "lg": 1199,
+        "inkml": 1199,
+        "png_missing_lg": [],
+        "n_png_missing_lg": 0,
+        "png_missing_inkml": [],
+        "n_png_missing_inkml": 0
+      },
+      "CROHME2023_test": {
+        "png": 2354,
+        "lg": 2299,
+        "inkml": 2300,
+        "png_missing_lg": [
+          "form_086_E688",
+          "form_087_E692",
+          "form_091_E724",
+          "form_096_E767",
+          "form_237_E1889",
+          "form_237_E1892",
+          "form_239_E1905",
+          "form_319_E2548",
+          "form_334_E2671",
+          "form_336_E2681"
+        ],
+        "n_png_missing_lg": 55,
+        "png_missing_inkml": [
+          "form_086_E688",
+          "form_087_E692",
+          "form_091_E724",
+          "form_096_E767",
+          "form_237_E1889",
+          "form_237_E1892",
+          "form_239_E1905",
+          "form_319_E2548",
+          "form_334_E2671",
+          "form_336_E2681"
+        ],
+        "n_png_missing_inkml": 54
+      }
+    },
+    "ok": false
+  }
+}

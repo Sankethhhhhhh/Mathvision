@@ -1,0 +1,9 @@
+{
+  "sources": "MNIST digits; HASY +,-,times,div,x; synthetic = and x-supplement",
+  "per_class_target": {
+    "train": 1400,
+    "val": 300,
+    "test": 300
+  },
+  "seed": 42
+}

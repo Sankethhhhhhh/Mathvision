@@ -1,0 +1,187 @@
+{
+  "version": "CROHME2023 (TC11, ICDAR 2023)",
+  "modalities": {
+    "IMG": {
+      "files": 27279,
+      "by_split": {
+        "test": 3553,
+        "train": 22024,
+        "val": 1702
+      },
+      "by_subset": {
+        "test/CROHME2019_test": 1199,
+        "test/CROHME2023_test": 2354,
+        "train/CROHME2013_train": 1045,
+        "train/CROHME2019": 10979,
+        "train/OffHME": 10000,
+        "val/CROHME2016_test": 1147,
+        "val/CROHME2023_val": 555
+      }
+    },
+    "INKML": {
+      "files": 164287,
+      "by_split": {
+        "test": 3499,
+        "train": 159086,
+        "val": 1702
+      },
+      "by_subset": {
+        "test/CROHME2019_test": 1199,
+        "test/CROHME2023_test": 2300,
+        "train/Artificial_data": 147062,
+        "train/CROHME2019": 10979,
+        "train/CROHME2023_train": 1045,
+        "val/CROHME2016_test": 1147,
+        "val/CROHME2023_val": 555
+      }
+    },
+    "SymLG": {
+      "files": 172332,
+      "by_split": {
+        "test": 3498,
+        "train": 167132,
+        "val": 1702
+      },
+      "by_subset": {
+        "test/CROHME2019_test": 1199,
+        "test/CROHME2023_test": 2299,
+        "train/Artificial_data": 145108,
+        "train/CROHME2019_train": 10979,
+        "train/CROHME2023_train": 1045,
+        "train/OffHME": 10000,
+        "val/CROHME2016_test": 1147,
+        "val/CROHME2023_val": 555
+      }
+    }
+  },
+  "splits": {
+    "train_expressions_with_png": 22024,
+    "expression_id": "PNG/InkML/SymLG share the same file stem (e.g. 001-equation000) within aligned subsets"
+  },
+  "counts": {
+    "png": 27279,
+    "inkml": 164287,
+    "lg": 172332
+  },
+  "symbol_annotation": {
+    "format": ".lg label graph: 'O,<id>,<label>,<w>,...' objects + 'R,<from>,<to>,<relation>,<w>' spatial relations (Right, Sup, Sub, Inside, ...)",
+    "lg_files_scanned": 3000,
+    "objects_scanned": 26485,
+    "distinct_labels_scanned": 293,
+    "most_common_labels": [
+      [
+        "(",
+        1708
+      ],
+      [
+        ")",
+        1708
+      ],
+      [
+        "-",
+        1595
+      ],
+      [
+        "=",
+        1498
+      ],
+      [
+        "2",
+        1465
+      ],
+      [
+        "1",
+        1445
+      ],
+      [
+        "x",
+        1017
+      ],
+      [
+        "COMMA",
+        980
+      ],
+      [
+        "+",
+        905
+      ],
+      [
+        "n",
+        713
+      ],
+      [
+        "i",
+        530
+      ],
+      [
+        "0",
+        503
+      ],
+      [
+        "a",
+        488
+      ],
+      [
+        "t",
+        420
+      ],
+      [
+        "y",
+        405
+      ],
+      [
+        "k",
+        390
+      ],
+      [
+        "d",
+        371
+      ],
+      [
+        "f",
+        325
+      ],
+      [
+        "3",
+        308
+      ],
+      [
+        "p",
+        292
+      ],
+      [
+        "r",
+        291
+      ],
+      [
+        "m",
+        283
+      ],
+      [
+        "/",
+        275
+      ],
+      [
+        "b",
+        270
+      ],
+      [
+        "c",
+        262
+      ]
+    ]
+  },
+  "annotations": {
+    "inkml": "strokes as <trace> X Y sequences + <annotation type='truth'> LaTeX + Content-MathML + writer/UI metadata",
+    "inkml_scanned": 500,
+    "inkml_with_latex_truth": 500,
+    "latex_examples": [
+      "I(s)=\\frac{s}{L\\left(s^{2}+\\frac {R}{ L}s+\\frac{1}{LC}\\right)}V(s)",
+      "k_{2}(s)=u_{0}+u_{1}s^{1}+l_{2}s^{2}+l_{3}s^{3}+u_{4}s^{4}+u_{5}s^{5}+\\ldots",
+      "f(t)=\\beta SI",
+      "\\pi/2-\\beta",
+      "f^{h}_{ k }"
+    ],
+    "image_format": "PNG renders (scanned paper or InkML renderings)"
+  }
+}

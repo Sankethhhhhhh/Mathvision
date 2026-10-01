@@ -1,0 +1,20 @@
+# Deep Learning Framework
+tensorflow>=2.16.0
+
+# Mathematical Parsing & Symbol Processing
+sympy>=1.12
+
+# Image Processing & Computer Vision
+opencv-python>=4.8.0
+pillow>=10.0.0
+numpy>=1.24.0
+
+# Data Analysis & Metrics Evaluation
+matplotlib>=3.7.0
+
+# User Interface (pinned: drawable-canvas 0.9.3 requires streamlit<1.50 components API)
+streamlit==1.44.0
+streamlit-drawable-canvas==0.9.3
+
+# Testing
+pytest>=8.0.0

@@ -1,0 +1,97 @@
+{
+  "source": "HASYv2 (data/raw/HASYv2.tar.bz2, unmodified)",
+  "original_images": 168233,
+  "original_classes": 369,
+  "image_dimensions": "32x32 grayscale",
+  "selected_classes": {
+    "70": {
+      "class": "0",
+      "latex": "0",
+      "samples": 133
+    },
+    "71": {
+      "class": "1",
+      "latex": "1",
+      "samples": 118
+    },
+    "72": {
+      "class": "2",
+      "latex": "2",
+      "samples": 124
+    },
+    "73": {
+      "class": "3",
+      "latex": "3",
+      "samples": 120
+    },
+    "74": {
+      "class": "4",
+      "latex": "4",
+      "samples": 61
+    },
+    "75": {
+      "class": "5",
+      "latex": "5",
+      "samples": 78
+    },
+    "76": {
+      "class": "6",
+      "latex": "6",
+      "samples": 100
+    },
+    "77": {
+      "class": "7",
+      "latex": "7",
+      "samples": 75
+    },
+    "78": {
+      "class": "8",
+      "latex": "8",
+      "samples": 121
+    },
+    "79": {
+      "class": "9",
+      "latex": "9",
+      "samples": 90
+    },
+    "196": {
+      "class": "+",
+      "latex": "+",
+      "samples": 90
+    },
+    "195": {
+      "class": "-",
+      "latex": "-",
+      "samples": 118
+    },
+    "513": {
+      "class": "×",
+      "latex": "\\times",
+      "samples": 1509
+    },
+    "526": {
+      "class": "÷",
+      "latex": "\\div",
+      "samples": 335
+    },
+    "113": {
+      "class": "x",
+      "latex": "x",
+      "samples": 66
+    }
+  },
+  "selected_images_total": 3138,
+  "missing_class_note": {
+    "=": "NO HASYv2 class exists for '=' (verified: no latex contains '='); keep the synthetic double-bar generator for '=' in Phase 2.",
+    "X_vs_x": "HASYv2 id 54 is uppercase 'X' — excluded (looks like times); only lowercase 'x' (id 113) is used."
+  },
+  "legacy_synthetic_dataset": {
+    "train": 26831,
+    "val": 5749,
+    "test": 5750
+  },
+  "validation": {
+    "unreadable": 0,
+    "label_mismatches": 0
+  }
+}

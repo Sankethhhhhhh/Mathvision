@@ -1,0 +1,168 @@
+{
+  "n": 20,
+  "symbol_accuracy": 0.676829268292683,
+  "equation_accuracy": 0.0,
+  "solution_accuracy": 0.25,
+  "expressions": [
+    {
+      "id": "UN19_1002_em_16",
+      "truth": "39",
+      "pred": "1--÷-×1÷=2x11",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.828
+    },
+    {
+      "id": "UN19_1009_em_131",
+      "truth": "1+10+11+15=37",
+      "pred": "++107+++++5=37",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.95
+    },
+    {
+      "id": "UN19_1013_em_192",
+      "truth": "8+6+6+6+6+6",
+      "pred": "6x+6+6+6+6+6",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.946
+    },
+    {
+      "id": "UN19_1016_em_224",
+      "truth": "x-x",
+      "pred": "3÷-x",
+      "eq_match": false,
+      "sol_agree": true,
+      "conf": 0.828
+    },
+    {
+      "id": "UN19_1020_em_284",
+      "truth": "9+1",
+      "pred": "÷-++×x",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.852
+    },
+    {
+      "id": "UN19_1021_em_287",
+      "truth": "1+16+4+24+8=53",
+      "pred": "++18++9853",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.944
+    },
+    {
+      "id": "UN19_1024_em_336",
+      "truth": "1+5+7",
+      "pred": "=-×++5+21",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.911
+    },
+    {
+      "id": "UN19_1033_em_469",
+      "truth": "8+8+8+8+6",
+      "pred": "6x-+8+86+8+67",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.898
+    },
+    {
+      "id": "UN19_1034_em_485",
+      "truth": "1+7+11",
+      "pred": "÷++7+x111",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.873
+    },
+    {
+      "id": "UN19_1040_em_578",
+      "truth": "1+1+1+1",
+      "pred": "+++++++",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 1.0
+    },
+    {
+      "id": "UN19_1043_em_620",
+      "truth": "4+x",
+      "pred": "+1+1x",
+      "eq_match": false,
+      "sol_agree": true,
+      "conf": 0.915
+    },
+    {
+      "id": "UN19_1045_em_657",
+      "truth": "+7+8+11",
+      "pred": "+++8+11",
+      "eq_match": false,
+      "sol_agree": true,
+      "conf": 0.977
+    },
+    {
+      "id": "UN19_1049_em_715",
+      "truth": "1+16+36+16+1=70",
+      "pred": "++16+6+1+1x",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.937
+    },
+    {
+      "id": "UN19wb_1110_em_1025",
+      "truth": "+78",
+      "pred": "+×8",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.665
+    },
+    {
+      "id": "UN19wb_1112_em_1053",
+      "truth": "+23+29",
+      "pred": "+x713+2÷91",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.93
+    },
+    {
+      "id": "UN19wb_1117_em_1126",
+      "truth": "3+7+127=137",
+      "pred": "3+7+x1127=1137",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.881
+    },
+    {
+      "id": "UN19wb_1117_em_1136",
+      "truth": "1+12+12+2+18+12+6=63",
+      "pred": "++++x9++6×",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.837
+    },
+    {
+      "id": "UN19wb_1118_em_1147",
+      "truth": "+13+17+19",
+      "pred": "++3++7++91",
+      "eq_match": false,
+      "sol_agree": true,
+      "conf": 0.904
+    },
+    {
+      "id": "UN19wb_1119_em_1159",
+      "truth": "12+8+6+6+6",
+      "pred": "+7-+8+67÷+6×+6×",
+      "eq_match": false,
+      "sol_agree": false,
+      "conf": 0.892
+    },
+    {
+      "id": "UN19wb_1119_em_1161",
+      "truth": "9+11+13",
+      "pred": "6÷++++157",
+      "eq_match": false,
+      "sol_agree": true,
+      "conf": 0.834
+    }
+  ]
+}
