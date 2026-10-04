@@ -286,6 +286,38 @@ export default function App() {
           {isExample && (
             <div className="mv-example-note">Example state — draw and press Solve for live inference.</div>
           )}
+
+          {/* step-by-step solution — real solver output, never hardcoded */}
+          <div className="mv-steps-rule" />
+          <div className="mv-label">HOW TO SOLVE</div>
+          {result.solution_kind === "error" || result.steps.length === 0 ? (
+            <div className="mv-steps-unsupported">
+              Step-by-step solving is not currently supported for this expression.
+            </div>
+          ) : (
+            <div className="mv-steps">
+              {result.steps.map((s, i) => (
+                <div key={i}>
+                  <div className="mv-step-card">
+                    <div className="mv-step-head">
+                      <span className="mv-step-num">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="mv-step-op">{s.operation.toUpperCase()}</span>
+                    </div>
+                    <div className="mv-step-eq">{s.before}</div>
+                    <div className="mv-step-eq after">{s.after}</div>
+                  </div>
+                  {i < result.steps.length - 1 && <div className="mv-step-arrow">↓</div>}
+                </div>
+              ))}
+              <div className="mv-step-card final">
+                <div className="mv-step-head">
+                  <span className="mv-step-num done">✓</span>
+                  <span className="mv-step-op">FINAL ANSWER</span>
+                </div>
+                <div className="mv-step-eq after">{result.solution_message}</div>
+              </div>
+            </div>
+          )}
         </section>
       </main>
 

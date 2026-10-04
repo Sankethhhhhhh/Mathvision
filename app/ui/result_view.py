@@ -40,6 +40,25 @@ def render_result_card(st, sol: dict) -> None:
         '</div>',
         unsafe_allow_html=True,
     )
+    steps = res.data.get("steps", []) if isinstance(res.data, dict) else []
+    if steps:
+        cards = "".join(
+            f'<div class="mv-symrow"><div class="sym">{i + 1:02d}</div>'
+            f'<div><b>{esc(s["operation"]).upper()}</b><br>'
+            f'<span class="mv-muted">{esc(s["before"])}</span><br>'
+            f'<b>{esc(s["after"])}</b></div></div>'
+            for i, s in enumerate(steps)
+        )
+        st.markdown(
+            '<div class="mv-card">'
+            f'{section_label("HOW TO SOLVE")}{cards}'
+            f'<div class="mv-symrow"><div class="sym">✓</div>'
+            f'<div><b>FINAL ANSWER</b><br><b>{answer}</b></div></div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.info("Step-by-step solving is not currently supported for this expression.")
     if low:
         st.warning(
             "Recognition confidence is low — try writing the equation "

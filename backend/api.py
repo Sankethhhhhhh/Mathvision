@@ -94,9 +94,12 @@ async def predict(file: UploadFile = File(...)):
             "expression": "", "solution_kind": "error",
             "solution_message": "No mathematical symbols were detected.",
             "confidence": 0.0, "ms": sol["ms"], "num_symbols": 0,
-            "symbols": [],
+            "symbols": [], "steps": [],
         })
     res = sol["result"]
+    steps = []
+    if res is not None:
+        steps = res.data.get("steps", []) if isinstance(res.data, dict) else []
     return {
         "expression": sol["expression"],
         "solution_kind": res.kind if res else "error",
@@ -106,4 +109,5 @@ async def predict(file: UploadFile = File(...)):
         "num_symbols": len(sol["crops"]),
         "symbols": [{"label": lab, "confidence": conf}
                     for lab, conf in sol["details"]],
+        "steps": steps,
     }

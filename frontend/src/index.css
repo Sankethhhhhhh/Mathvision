@@ -184,6 +184,46 @@ body {
 .mv-stat-val.cyan, .cyan { color: var(--cyan); }
 .mv-example-note { margin-top: 8px; color: var(--muted); font-size: 0.75rem; }
 
+/* step-by-step solution */
+.mv-steps-rule { border: none; border-top: 1px solid var(--border); margin: 14px 0 4px; }
+.mv-steps-unsupported {
+  color: var(--muted);
+  font-size: 0.82rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 6px;
+}
+.mv-steps { margin-top: 8px; }
+.mv-step-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.mv-step-card.final { border-color: var(--accent); background: #0f1f19; }
+.mv-step-head { display: flex; align-items: center; gap: 10px; }
+.mv-step-num {
+  font-family: Consolas, monospace;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 7px;
+  background: #101416;
+}
+.mv-step-num.done { border-color: var(--accent); }
+.mv-step-op { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.06em; color: var(--text); }
+.mv-step-eq {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 1.02rem;
+  color: var(--muted);
+  margin: 6px 0 0 2px;
+}
+.mv-step-eq.after { color: var(--text); font-weight: 600; }
+.mv-step-arrow { text-align: center; color: var(--border); font-size: 0.9rem; line-height: 1.6; }
+
 /* recognition */
 .mv-symbols {
   display: grid;

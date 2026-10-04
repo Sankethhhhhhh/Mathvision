@@ -36,3 +36,29 @@
 
 ## How to run
 `venv\Scripts\python run.py` → http://localhost:8501 → draw `2x + 5 = 15` → SOLVE → `x = 5`.
+
+## Fix log — 2026-10-04 — Streamlit st.image() width="stretch" TypeError
+- Issue: MODEL INSPECTION crashed with `TypeError: '<=' not supported between
+  instances of 'str' and 'int'` at `app/ui/pipeline_view.py:54`
+  (`st.image(..., width="stretch")`).
+- Cause: the pinned venv runs Streamlit 1.44.0, whose `st.image` signature is
+  `width: int | None` (plus `use_container_width: bool`). The string
+  `"stretch"` is only accepted by newer Streamlit (e.g. 1.60); on 1.44 it
+  raises TypeError. (Global Python has 1.60, which masked the bug.)
+- Fix: replaced all 4 `width="stretch"` occurrences with the 1.44-compatible
+  `use_container_width=True` (no hardcoded pixel width; images fill their
+  container as intended):
+  `app/ui/pipeline_view.py` (3 calls: preprocessed, original, symbol crops) +
+  `app/main.py` (1 call: upload preview). No CNN/preprocessing/segmentation/
+  solver changes.
+- UI errors: wrapped MODEL INSPECTION rendering in try/except that logs the
+  full traceback via `traceback.print_exc()` (terminal/logs) and shows users
+  only `st.error("Unable to display model inspection results.")`.
+- Verification: `pytest` **24 passed**; live pipeline re-run on shipped
+  inputs — `2x+5=15→x=5`, `3x-7=11→x=6`, `7x=35→x=5`, `4x+2=18→x=4`,
+  `12+8=20`/`20÷4=5` correct; solver direct `3*x+5=32→x=9` with steps
+  `Subtract 5 → 3x = 27`, `Divide by 3 → x = 9`; fake-st harness confirms
+  inspection renders with `use_container_width=True` and failure path shows
+  the clean message; headless `streamlit run` boots `ok` with no traceback.
+  NOTE: a stale pre-fix server may still occupy :8502 — restart it to pick
+  up this fix.

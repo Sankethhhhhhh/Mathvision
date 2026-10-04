@@ -123,17 +123,20 @@ def main():
         if k not in st.session_state:
             st.session_state[k] = v
 
+    def _go_workspace():
+        st.session_state.canvas_key += 1
+        st.session_state.solution = None
+        st.session_state.nav = "Workspace"
+
     # ---------- sidebar: purposeful product nav ----------
     with st.sidebar:
         st.markdown('<div class="mv-brand">∑ MATHVISION</div>', unsafe_allow_html=True)
         st.caption("Handwritten math · local CNN")
         nav = st.radio("Section", ["Workspace", "Model", "About"],
                        key="nav", label_visibility="collapsed")
-        if st.button("＋ New Equation", use_container_width=True):
-            st.session_state.canvas_key += 1
-            st.session_state.solution = None
-            st.session_state.nav = "Workspace"
-            st.rerun()
+        if st.button("＋ New Equation", use_container_width=True,
+                     on_click=_go_workspace):
+            pass
         st.markdown(section_label("MODEL"), unsafe_allow_html=True)
         st.markdown(status_pill(is_online), unsafe_allow_html=True)
         st.markdown(section_label("RECENT EQUATIONS"), unsafe_allow_html=True)
@@ -227,7 +230,7 @@ def main():
                 try:
                     upload_image = _decode_upload(upload)
                     st.image(cv2.cvtColor(upload_image, cv2.COLOR_BGR2RGB),
-                             caption="Upload preview", width="stretch")
+                             caption="Upload preview", use_container_width=True)
                 except ValueError as e:
                     st.error(str(e))
 
@@ -295,7 +298,8 @@ def main():
                         if sol["crops"] and sol["result"] is not None and sol["result"].kind != "error":
                             _push_history(sol["expression"], sol["result"].message,
                                           sol["confidence"], sol["ms"])
-                        st.session_state.nav = "Workspace"
+                        # Already on Workspace (examples only render here) —
+                        # no nav change needed.
                         st.rerun()
                 else:
                     st.error(f"Example file missing: {fname}")

@@ -17,6 +17,7 @@ def solve_expression(expr: str) -> SolveResult:
     from sympy import Eq, Symbol, solve, sympify
 
     from app.solver.parser import normalize_expression, split_equation, validate_expression
+    from app.solver.steps import explain_expression
 
     ok, reason = validate_expression(expr)
     if not ok:
@@ -25,6 +26,16 @@ def solve_expression(expr: str) -> SolveResult:
     norm = normalize_expression(expr)
     lhs_s, rhs_s = split_equation(norm)
     x = Symbol("x")
+
+    def _steps() -> list[dict]:
+        try:
+            found = explain_expression(lhs_s, rhs_s)
+            if not found:
+                return []
+            return [{"operation": s.operation, "before": s.before, "after": s.after}
+                    for s in found]
+        except Exception:
+            return []
 
     try:
         if rhs_s is not None:
@@ -38,20 +49,23 @@ def solve_expression(expr: str) -> SolveResult:
                     "linear_solution", norm,
                     f"{' , '.join(f'x = {s}' for s in sol)}",
                     {"solutions": [str(s) for s in sol],
-                     "lhs": str(lhs), "rhs": str(rhs)})
+                     "lhs": str(lhs), "rhs": str(rhs),
+                     "steps": _steps()})
             lv, rv = float(lhs.evalf()), float(rhs.evalf())
             correct = abs(lv - rv) < 1e-9
             return SolveResult(
                 "arithmetic_check", norm,
                 f"{lv:g} = {rv:g} → {'correct ✔' if correct else 'incorrect ✘'}",
-                {"lhs_value": lv, "rhs_value": rv, "correct": correct})
+                {"lhs_value": lv, "rhs_value": rv, "correct": correct,
+                 "steps": _steps()})
         val = sympify(lhs_s)
         if "x" in norm:
             sol = solve(val, x)
             return SolveResult("linear_solution", norm,
                                f"{' , '.join(f'x = {s}' for s in sol)}",
-                               {"solutions": [str(s) for s in sol]})
+                               {"solutions": [str(s) for s in sol],
+                                "steps": _steps()})
         return SolveResult("value", norm, f"= {float(val.evalf()):g}",
-                           {"value": float(val.evalf())})
+                           {"value": float(val.evalf()), "steps": _steps()})
     except Exception as e:  # noqa: BLE001 — surface as user-facing error
         return SolveResult("error", norm, f"Could not solve: {e}", {})

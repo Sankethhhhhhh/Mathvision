@@ -1,5 +1,11 @@
 export interface SymbolConf { label: string; confidence: number }
 
+export interface SolveStep {
+  operation: string;
+  before: string;
+  after: string;
+}
+
 export interface PredictResult {
   expression: string;
   solution_kind: string;
@@ -8,6 +14,7 @@ export interface PredictResult {
   ms: number;
   num_symbols: number;
   symbols: SymbolConf[];
+  steps: SolveStep[];
 }
 
 const BASE = "http://localhost:8000";
@@ -50,5 +57,9 @@ export const EXAMPLE_RESULT: PredictResult = {
     { label: "=", confidence: 0.994 },
     { label: "1", confidence: 0.989 },
     { label: "5", confidence: 0.975 },
+  ],
+  steps: [
+    { operation: "Subtract 5 from both sides", before: "2x + 5 = 15", after: "2x = 10" },
+    { operation: "Divide both sides by 2", before: "2x = 10", after: "x = 5" },
   ],
 };
