@@ -73,8 +73,8 @@ def model_info() -> dict:
     }
 
 
-@app.post("/api/predict")
-async def predict(file: UploadFile = File(...)):
+@app.post("/api/solve")
+async def solve(file: UploadFile = File(...)):
     from app.main import solve_image
 
     raw = await file.read()
@@ -91,23 +91,23 @@ async def predict(file: UploadFile = File(...)):
 
     if not sol["crops"]:
         return JSONResponse({
-            "expression": "", "solution_kind": "error",
-            "solution_message": "No mathematical symbols were detected.",
-            "confidence": 0.0, "ms": sol["ms"], "num_symbols": 0,
-            "symbols": [], "steps": [],
+            "equation": "", 
+            "solution": "No mathematical symbols were detected.",
+            "confidence": 0.0, 
+            "inference_time_ms": sol["ms"],
+            "symbols": [], 
+            "steps": [],
         })
     res = sol["result"]
     steps = []
     if res is not None:
-        steps = res.data.get("steps", []) if isinstance(res.data, dict) else []
+        steps = res.data.get("steps", []) if hasattr(res, "data") and isinstance(res.data, dict) else []
     return {
-        "expression": sol["expression"],
-        "solution_kind": res.kind if res else "error",
-        "solution_message": res.message if res else "Recognition unavailable.",
+        "equation": sol["expression"],
+        "solution": res.message if res else "Recognition unavailable.",
         "confidence": sol["confidence"],
-        "ms": sol["ms"],
-        "num_symbols": len(sol["crops"]),
-        "symbols": [{"label": lab, "confidence": conf}
+        "inference_time_ms": sol["ms"],
+        "symbols": [{"symbol": lab, "confidence": conf}
                     for lab, conf in sol["details"]],
         "steps": steps,
     }
