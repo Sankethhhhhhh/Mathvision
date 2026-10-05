@@ -10,13 +10,22 @@ and renders real outputs. Nothing is hardcoded.
 """
 from __future__ import annotations
 
-import time
+import sys
 from pathlib import Path
+
+# Ensure repository root is on sys.path so `from app...` imports work
+# when Streamlit executes this file directly (e.g. `streamlit run app/main.py`
+# on Streamlit Cloud, where sys.path[0] is app/ rather than the repo root).
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+import time
 
 import cv2
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = PROJECT_ROOT
 MODEL_PATH = ROOT / "models" / "mathvision_cnn.keras"
 METRICS_PATH = ROOT / "models" / "metrics.json"
 TEST_DIR = ROOT / "data" / "test"
