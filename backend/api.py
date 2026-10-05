@@ -7,6 +7,7 @@ SymbolPredictor -> solve_expression). No ML logic duplicated here.
 from __future__ import annotations
 
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -22,10 +23,18 @@ METRICS_PATH = ROOT / "models" / "metrics.json"
 
 app = FastAPI(title="MathVision API", version="1.0.0")
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOW_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174",
-                   "http://localhost:3000", "http://127.0.0.1:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

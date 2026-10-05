@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import DrawingCanvas from "@/components/DrawingCanvas";
 
 export default function Home() {
@@ -106,7 +106,7 @@ export default function Home() {
               <div className="h-[150px] flex flex-col justify-center items-center text-black border-2 border-dashed border-gray-300 rounded cursor-pointer"
                    onClick={() => fileInputRef.current?.click()}>
                 {blob ? (
-                  <p className="font-mono">{blob.name || "Image selected"}</p>
+                  <p className="font-mono">{blob instanceof File ? blob.name : "Image selected"}</p>
                 ) : (
                   <p className="font-mono">Click to upload image (PNG, JPG, WEBP)</p>
                 )}
@@ -194,7 +194,7 @@ export default function Home() {
                       <div key={i} className="bg-black border border-card-border p-2 rounded flex flex-col items-center min-w-[50px]">
                         <span className="text-xl font-mono">{sym.symbol}</span>
                         <div className="w-full h-1 bg-card-border mt-1 relative rounded overflow-hidden">
-                          <div className="absolute top-0 left-0 h-full bg-accent" style={{ width: \`\${sym.confidence * 100}%\` }}></div>
+                          <div className="absolute top-0 left-0 h-full bg-accent" style={{ width: `${sym.confidence * 100}%` }}></div>
                         </div>
                         <span className="text-[10px] text-gray-500 mt-1">{(sym.confidence * 100).toFixed(0)}%</span>
                       </div>
